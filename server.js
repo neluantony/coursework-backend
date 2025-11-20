@@ -72,13 +72,17 @@ app.get('/lessons', async (req, res) => {
   }
 });
 
-// POST Route: Save a new order
-// Receives order details (name, phone, lesson IDs) and saves them to the 'orders' collection
+// POST route to save a new order
 app.post('/orders', async (req, res) => {
   try {
     const order = req.body;
+    
+    // Simple Validation: Ensure required fields are present
+    if (!order.name || !order.phone || !order.lessonIds) {
+        return res.status(400).json({ message: "Missing required fields: name, phone, or lessonIds" });
+    }
+
     const result = await db.collection('orders').insertOne(order);
-    // Return the ID of the new order document
     res.status(201).json({ message: "Order saved successfully", insertedId: result.insertedId });
   } catch (err) {
     console.error("Error saving order:", err);
