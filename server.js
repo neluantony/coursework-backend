@@ -1,4 +1,4 @@
-require('dotenv').config(); // Load environment variables from .env file
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
@@ -6,11 +6,25 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const app = express();
 const port = 3000;
 
-// Middleware
+// --- MIDDLEWARE ---
+
+// 1. Standard Middleware
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
+// 2. Logger Middleware 
+// This outputs every request to the server console
+app.use((req, res, next) => {
+    console.log(`[Logger] Request: ${req.method} ${req.url}`);
+    next(); // Important: tells Express to move to the next step
+});
+
+// 3. Static File Middleware 
+// This serves images from the 'images' folder
+app.use('/images', express.static('images'));
+
+
+// --- MONGODB CONNECTION ---
 const uri = process.env.MONGO_URI;
 const client = new MongoClient(uri, {
   serverApi: {
@@ -20,17 +34,13 @@ const client = new MongoClient(uri, {
   }
 });
 
-let db; // Variable to hold the database connection
+let db;
 
 async function run() {
   try {
-    // Connect the client to the server
     await client.connect();
     console.log("Successfully connected to MongoDB!");
-
-    // Set the db variable to your database
     db = client.db('coursework');
-
   } catch (err) {
     console.error("Failed to connect to MongoDB", err);
   }
@@ -38,7 +48,7 @@ async function run() {
 run().catch(console.dir);
 
 
-// -- API ROUTES --
+// --- API ROUTES ---
 
 // GET route to fetch all lessons
 app.get('/lessons', async (req, res) => {
@@ -54,7 +64,7 @@ app.get('/lessons', async (req, res) => {
 // POST route to save a new order
 app.post('/orders', async (req, res) => {
   try {
-    const order = req.body; // The order data sent from the front-end
+    const order = req.body;
     const result = await db.collection('orders').insertOne(order);
     res.status(201).json({ message: "Order saved successfully", insertedId: result.insertedId });
   } catch (err) {
@@ -66,8 +76,8 @@ app.post('/orders', async (req, res) => {
 // PUT route to update the spaces in a lesson
 app.put('/lessons/:id', async (req, res) => {
   try {
-    const lessonId = parseInt(req.params.id); // Get the ID from the URL
-    const newSpaces = req.body.spaces;       // Get the new number of spaces from the request
+    const lessonId = parseInt(req.params.id);
+    const newSpaces = req.body.spaces;
 
     if (typeof newSpaces !== 'number') {
         return res.status(400).send("Invalid 'spaces' value provided.");
@@ -92,13 +102,12 @@ app.put('/lessons/:id', async (req, res) => {
 // GET route for search functionality
 app.get('/search', async (req, res) => {
   try {
-    const query = req.query.q; // Get the query parameter (e.g. ?q=math)
+    const query = req.query.q;
 
     if (!query) {
       return res.status(400).send("Search query is missing.");
     }
 
-    // MongoDB query using Regex for pattern matching (case-insensitive 'i')
     const results = await db.collection('lessons').find({
       $or: [
         { subject: { $regex: query, $options: 'i' } },
@@ -115,7 +124,7 @@ app.get('/search', async (req, res) => {
 
 // Test route
 app.get('/', (req, res) => {
-  res.send('Hello from the Express server!');
+  res.send('Server is running');
 });
 
 app.listen(port, () => {
