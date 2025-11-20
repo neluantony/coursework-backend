@@ -140,6 +140,11 @@ app.get('/search', async (req, res) => {
   }
 });
 
+// Middleware to handle 404 - Resource Not Found
+app.use((req, res) => {
+    res.status(404).send("Resource not found");
+});
+
 // Simple root route to verify the server is running
 app.get('/', (req, res) => {
   res.send('Server is running');
