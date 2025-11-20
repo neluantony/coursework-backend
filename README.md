@@ -4,7 +4,7 @@ This is the backend server for the After School Activities web application.
 
 ## Links
 * **GitHub Repository:** https://github.com/neluantony/coursework-frontend
-* **Live Server API:** https://coursework-backend-qzv7.onrender.com/lessons
+* **Live Server API:** https://coursework-backend-qzv7.onrender.com
 
 ## Features
 * REST API with GET, POST, and PUT endpoints.
