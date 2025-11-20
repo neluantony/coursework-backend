@@ -89,6 +89,29 @@ app.put('/lessons/:id', async (req, res) => {
   }
 });
 
+// GET route for search functionality
+app.get('/search', async (req, res) => {
+  try {
+    const query = req.query.q; // Get the query parameter (e.g. ?q=math)
+
+    if (!query) {
+      return res.status(400).send("Search query is missing.");
+    }
+
+    // MongoDB query using Regex for pattern matching (case-insensitive 'i')
+    const results = await db.collection('lessons').find({
+      $or: [
+        { subject: { $regex: query, $options: 'i' } },
+        { location: { $regex: query, $options: 'i' } }
+      ]
+    }).toArray();
+
+    res.json(results);
+  } catch (err) {
+    console.error("Search error:", err);
+    res.status(500).send("Internal Server Error");
+  }
+});
 
 // Test route
 app.get('/', (req, res) => {
