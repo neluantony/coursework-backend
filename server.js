@@ -77,13 +77,29 @@ app.post('/orders', async (req, res) => {
   try {
     const order = req.body;
     
-    // Simple Validation: Ensure required fields are present
+    // 1. Basic Validation: Ensure required fields are present
     if (!order.name || !order.phone || !order.lessonIds) {
         return res.status(400).json({ message: "Missing required fields: name, phone, or lessonIds" });
     }
 
+    // 2. Data Type Validation (Regex)
+    // Matches only letters (A-Z, a-z) and spaces
+    const nameRegex = /^[A-Za-z\s]+$/;
+    // Matches only numbers (0-9)
+    const phoneRegex = /^[0-9]+$/;
+
+    if (!nameRegex.test(order.name)) {
+        return res.status(400).json({ message: "Invalid name: must contain letters only." });
+    }
+
+    if (!phoneRegex.test(order.phone)) {
+        return res.status(400).json({ message: "Invalid phone: must contain numbers only." });
+    }
+
+    // If validation passes, save to MongoDB
     const result = await db.collection('orders').insertOne(order);
     res.status(201).json({ message: "Order saved successfully", insertedId: result.insertedId });
+    
   } catch (err) {
     console.error("Error saving order:", err);
     res.status(500).send("Error saving order to database.");
